@@ -24,6 +24,10 @@ public class WorldEventLogger : MonoBehaviour
             position = pos,
             additionalData = data ?? new Dictionary<string, string>()
         };
-        ExternalWorldAdapter.Instance.PushEvent(e);
+
+        if (ExternalWorldAdapter.Instance != null)
+            ExternalWorldAdapter.Instance.PushEvent(e);
+        else
+            ExternalWorldAPI.PushEvent(e);
     }
 }
