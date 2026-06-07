@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e113458001e14b4e9003cff0750b1ff, type: 3}
+  m_Name: WorldConfig
+  m_EditorClassIdentifier: 
+  WorldSize: {x: 500, y: 300, z: 500}
+  InitialAgents: 80
+  InitialResources: 150
+  EvolutionInterval: 1200
+  MutationRate: 0.12
+  MutationStrength: 0.25
+  LifetimeWeight: 0.4
+  EnergyWeight: 0.25
+  StructuresWeight: 0.2
+  ExplorationWeight: 0.1
+  OffspringWeight: 0.05
+  BaseMetabolism: 0.15
+  EnergyDeathThreshold: 0
+  ReproductionEnergyThreshold: 80
