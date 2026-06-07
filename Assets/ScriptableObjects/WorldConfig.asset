@@ -20,15 +20,18 @@ MonoBehaviour:
   EvolutionInterval: 1200
   SnapshotInterval: 1
   RandomSeed: 0
+  LogEventsToConsole: 0
   AgentPrefab: {fileID: 0}
   EnergyCrystalPrefab: {fileID: 0}
   FoodPrefab: {fileID: 0}
   BlockPrefab: {fileID: 0}
   CorpseResourcePrefab: {fileID: 0}
   TerrainResolution: 513
-  TerrainMaxHeight: 150
-  BaseNoiseFrequency: 0.01
+  TerrainMaxHeight: 90
+  BaseNoiseFrequency: 0.006
   NoiseOctaves: 4
+  TerrainHeightScale: 0.55
+  TerrainSmoothIterations: 3
   SpawnHeightOffset: 3
   MutationRate: 0.12
   MutationStrength: 0.25
@@ -45,6 +48,11 @@ MonoBehaviour:
   ReproductionCost: 55
   MaxAgentAge: 1800
   ResourcePickupDistance: 2
+  TargetFoodCount: 120
+  TargetEnergyCrystalCount: 80
+  TargetLooseBlockCount: 120
+  ResourceRegenCheckInterval: 10
+  ResourceRegenBatchSize: 12
   BuildEnergyCost: 15
   BuildCooldown: 3
   BuildDistance: 2.5

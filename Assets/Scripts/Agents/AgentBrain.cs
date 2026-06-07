@@ -11,6 +11,21 @@ public class AgentBrain : MonoBehaviour
 
     private void Awake()
     {
+        CacheReferences();
+    }
+
+    private void Reset()
+    {
+        CacheReferences();
+    }
+
+    private void OnValidate()
+    {
+        CacheReferences();
+    }
+
+    private void CacheReferences()
+    {
         if (geneticController == null) geneticController = GetComponent<GeneticController>();
         if (sensors == null) sensors = GetComponent<AgentSensors>();
     }
@@ -26,9 +41,10 @@ public class AgentBrain : MonoBehaviour
             desired += reading.direction * (1f / Mathf.Max(reading.distance, 0.1f)) * weight;
         }
 
-        float exploreWeight = genotype != null ? genotype.GetRange(Genotype.ExploreWeight, 0.05f, 0.8f) : 0.3f;
-        desired += Random.insideUnitSphere * exploreWeight;
-        desired.y = Mathf.Clamp(desired.y, -0.25f, 1f);
+        float exploreWeight = genotype != null ? genotype.GetRange(Genotype.ExploreWeight, 0.02f, 0.35f) : 0.15f;
+        Vector2 wander = Random.insideUnitCircle * exploreWeight;
+        desired += new Vector3(wander.x, 0f, wander.y);
+        desired.y = 0f;
         return desired.sqrMagnitude > 0.001f ? desired.normalized : transform.forward;
     }
 
@@ -38,7 +54,7 @@ public class AgentBrain : MonoBehaviour
         if (genotype == null) return false;
 
         float buildWeight = genotype.Get(Genotype.BuildWeight);
-        return buildWeight > 0.65f && Random.value < buildWeight * 0.02f;
+        return buildWeight > 0.72f && Random.value < buildWeight * 0.004f;
     }
 
     public void Remember(WorldEvent worldEvent)

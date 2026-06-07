@@ -12,6 +12,7 @@ public class WorldConfig : ScriptableObject
     public float EvolutionInterval = 1200f;
     public float SnapshotInterval = 1f;
     public int RandomSeed = 0;
+    public bool LogEventsToConsole = false;
 
     [Header("Prefabs")]
     public GameObject AgentPrefab;
@@ -22,9 +23,11 @@ public class WorldConfig : ScriptableObject
 
     [Header("Terrain")]
     public int TerrainResolution = 513;
-    public float TerrainMaxHeight = 150f;
-    public float BaseNoiseFrequency = 0.01f;
+    public float TerrainMaxHeight = 90f;
+    public float BaseNoiseFrequency = 0.006f;
     public int NoiseOctaves = 4;
+    public float TerrainHeightScale = 0.55f;
+    public int TerrainSmoothIterations = 3;
     public float SpawnHeightOffset = 3f;
 
     [Header("Genetic Algorithm")]
@@ -47,6 +50,13 @@ public class WorldConfig : ScriptableObject
     public float ReproductionCost = 55f;
     public float MaxAgentAge = 1800f;
     public float ResourcePickupDistance = 2f;
+
+    [Header("Resources")]
+    public int TargetFoodCount = 120;
+    public int TargetEnergyCrystalCount = 80;
+    public int TargetLooseBlockCount = 120;
+    public float ResourceRegenCheckInterval = 10f;
+    public int ResourceRegenBatchSize = 12;
 
     [Header("Building")]
     public float BuildEnergyCost = 15f;

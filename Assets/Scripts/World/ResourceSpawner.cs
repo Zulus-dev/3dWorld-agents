@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ResourceSpawner : MonoBehaviour
 {
@@ -12,36 +13,78 @@ public class ResourceSpawner : MonoBehaviour
         ResourceSpawner spawner = FindObjectOfType<ResourceSpawner>();
         WorldConfig config = WorldManager.Instance != null ? WorldManager.Instance.config : null;
 
-        for (int i = 0; i < count; i++)
-        {
-            GameObject prefab = ResolveResourcePrefab(spawner, config, Random.Range(0, 3));
-            if (prefab == null) continue;
-            Instantiate(prefab, RandomResourcePosition(config), Quaternion.identity);
-        }
+        int food = Mathf.RoundToInt(count * 0.4f);
+        int crystals = Mathf.RoundToInt(count * 0.3f);
+        int blocks = Mathf.Max(0, count - food - crystals);
+
+        SpawnBatch(spawner, config, "Food", food);
+        SpawnBatch(spawner, config, "EnergyCrystal", crystals);
+        SpawnBatch(spawner, config, "Block", blocks);
     }
 
     private void Start()
     {
-        StartCoroutine(RegenerateFood());
+        StartCoroutine(RegenerateResources());
     }
 
-    private IEnumerator RegenerateFood()
+    private IEnumerator RegenerateResources()
     {
         while (true)
         {
-            yield return new WaitForSeconds(Random.Range(300, 600));
             WorldConfig config = WorldManager.Instance != null ? WorldManager.Instance.config : null;
-            GameObject prefab = foodPrefab != null ? foodPrefab : (config != null ? config.FoodPrefab : null);
-            if (prefab != null)
-                Instantiate(prefab, RandomResourcePosition(config), Quaternion.identity);
+            float interval = config != null ? Mathf.Max(1f, config.ResourceRegenCheckInterval) : 10f;
+            yield return new WaitForSeconds(interval);
+            RefillResources(config);
         }
     }
 
-    private static GameObject ResolveResourcePrefab(ResourceSpawner spawner, WorldConfig config, int type)
+    private void RefillResources(WorldConfig config)
     {
-        if (type == 0)
+        if (WorldManager.Instance == null || config == null) return;
+
+        int foodCount = CountWorldObjects("Food");
+        int crystalCount = CountWorldObjects("EnergyCrystal");
+        int looseBlockCount = CountWorldObjects("Block");
+        int batchSize = Mathf.Max(1, config.ResourceRegenBatchSize);
+
+        SpawnMissing(config, "Food", config.TargetFoodCount - foodCount, batchSize);
+        SpawnMissing(config, "EnergyCrystal", config.TargetEnergyCrystalCount - crystalCount, batchSize);
+        SpawnMissing(config, "Block", config.TargetLooseBlockCount - looseBlockCount, batchSize);
+    }
+
+    private void SpawnMissing(WorldConfig config, string type, int missing, int batchSize)
+    {
+        if (missing <= 0) return;
+        SpawnBatch(this, config, type, Mathf.Min(missing, batchSize));
+    }
+
+    private static void SpawnBatch(ResourceSpawner spawner, WorldConfig config, string type, int count)
+    {
+        GameObject prefab = ResolveResourcePrefab(spawner, config, type);
+        if (prefab == null) return;
+
+        for (int i = 0; i < count; i++)
+            Instantiate(prefab, RandomResourcePosition(config), Quaternion.identity);
+    }
+
+    private static int CountWorldObjects(string type)
+    {
+        List<WorldObject> objects = WorldManager.Instance.GetWorldObjects();
+        int count = 0;
+        for (int i = 0; i < objects.Count; i++)
+        {
+            WorldObject obj = objects[i];
+            if (obj != null && obj.data != null && obj.data.type == type)
+                count++;
+        }
+        return count;
+    }
+
+    private static GameObject ResolveResourcePrefab(ResourceSpawner spawner, WorldConfig config, string type)
+    {
+        if (type == "EnergyCrystal")
             return FirstPrefab(spawner != null ? spawner.energyCrystalPrefab : null, config != null ? config.EnergyCrystalPrefab : null, "Prefabs/EnergyCrystal");
-        if (type == 1)
+        if (type == "Food")
             return FirstPrefab(spawner != null ? spawner.foodPrefab : null, config != null ? config.FoodPrefab : null, "Prefabs/Food");
         return FirstPrefab(spawner != null ? spawner.blockPrefab : null, config != null ? config.BlockPrefab : null, "Prefabs/Block");
     }
@@ -55,10 +98,17 @@ public class ResourceSpawner : MonoBehaviour
 
     private static Vector3 RandomResourcePosition(WorldConfig config)
     {
+        if (WorldManager.Instance != null)
+        {
+            Vector3 pos = WorldManager.Instance.GetRandomSpawnPosition();
+            pos.y = WorldManager.Instance.SampleTerrainHeight(pos) + 2f;
+            return pos;
+        }
+
         Vector3 worldSize = config != null ? config.WorldSize : new Vector3(500, 300, 500);
         Vector3 half = worldSize * 0.5f;
-        Vector3 pos = new Vector3(Random.Range(-half.x, half.x), worldSize.y, Random.Range(-half.z, half.z));
-        pos.y = Terrain.activeTerrain != null ? Terrain.activeTerrain.SampleHeight(pos) + 2f : 2f;
-        return pos;
+        Vector3 fallback = new Vector3(Random.Range(-half.x, half.x), worldSize.y, Random.Range(-half.z, half.z));
+        fallback.y = Terrain.activeTerrain != null ? Terrain.activeTerrain.SampleHeight(fallback) + 2f : 2f;
+        return fallback;
     }
 }

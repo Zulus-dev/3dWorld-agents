@@ -29,6 +29,18 @@ public class GeneticAgent : WorldObject
         data.type = "Agent";
     }
 
+    protected override void Reset()
+    {
+        base.Reset();
+        CacheComponents();
+    }
+
+    protected override void OnValidate()
+    {
+        base.OnValidate();
+        CacheComponents();
+    }
+
     private void Start()
     {
         CacheComponents();

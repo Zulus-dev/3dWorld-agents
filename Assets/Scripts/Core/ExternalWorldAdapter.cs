@@ -32,7 +32,10 @@ public class ExternalWorldAdapter : MonoBehaviour
     public void PushEvent(WorldEvent e)
     {
         ExternalWorldAPI.PushEvent(e);
-        Debug.Log("Event: " + e.eventType + " at " + e.position);
+
+        WorldConfig config = WorldManager.Instance != null ? WorldManager.Instance.config : null;
+        if (config != null && config.LogEventsToConsole)
+            Debug.Log("Event: " + e.eventType + " at " + e.position);
     }
 
     public void PushWorldSnapshot()

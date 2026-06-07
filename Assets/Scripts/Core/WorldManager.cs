@@ -112,14 +112,37 @@ public class WorldManager : MonoBehaviour
     public Vector3 GetRandomSpawnPosition()
     {
         Vector3 half = config.WorldSize * 0.5f;
-        Vector3 pos = new Vector3(Random.Range(-half.x, half.x), config.WorldSize.y, Random.Range(-half.z, half.z));
-        pos.y = SampleTerrainHeight(pos) + config.SpawnHeightOffset;
-        return pos;
+        Vector3 best = Vector3.zero;
+
+        for (int i = 0; i < 24; i++)
+        {
+            Vector3 candidate = new Vector3(Random.Range(-half.x, half.x), config.WorldSize.y, Random.Range(-half.z, half.z));
+            candidate.y = SampleTerrainHeight(candidate) + config.SpawnHeightOffset;
+            if (IsReasonablyFlat(candidate))
+                return candidate;
+            best = candidate;
+        }
+
+        return best;
     }
 
     public float SampleTerrainHeight(Vector3 position)
     {
         return Terrain.activeTerrain != null ? Terrain.activeTerrain.SampleHeight(position) : 0f;
+    }
+
+    private bool IsReasonablyFlat(Vector3 position)
+    {
+        float center = SampleTerrainHeight(position);
+        float maxDelta = 0f;
+        const float radius = 3f;
+
+        maxDelta = Mathf.Max(maxDelta, Mathf.Abs(center - SampleTerrainHeight(position + Vector3.forward * radius)));
+        maxDelta = Mathf.Max(maxDelta, Mathf.Abs(center - SampleTerrainHeight(position + Vector3.back * radius)));
+        maxDelta = Mathf.Max(maxDelta, Mathf.Abs(center - SampleTerrainHeight(position + Vector3.left * radius)));
+        maxDelta = Mathf.Max(maxDelta, Mathf.Abs(center - SampleTerrainHeight(position + Vector3.right * radius)));
+
+        return maxDelta <= 2.5f;
     }
 
     public void RegisterObject(WorldObject obj)

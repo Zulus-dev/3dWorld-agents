@@ -10,6 +10,21 @@ public class AgentBuilder : MonoBehaviour
 
     private void Awake()
     {
+        CacheReferences();
+    }
+
+    private void Reset()
+    {
+        CacheReferences();
+    }
+
+    private void OnValidate()
+    {
+        CacheReferences();
+    }
+
+    private void CacheReferences()
+    {
         agent = GetComponent<GeneticAgent>();
         energySystem = GetComponent<AgentEnergySystem>();
         if (geneticController == null) geneticController = GetComponent<GeneticController>();
