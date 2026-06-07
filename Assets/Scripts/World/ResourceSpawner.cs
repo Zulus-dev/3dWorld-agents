@@ -8,25 +8,17 @@ public class ResourceSpawner : MonoBehaviour
     public GameObject blockPrefab;
 
     public static void SpawnInitialResources(int count)
-{
-    // Находим спавнер ОДИН раз перед циклом
-    ResourceSpawner spawner = FindObjectOfType<ResourceSpawner>();
-    if (spawner == null) return; 
-
-    for (int i = 0; i < count; i++)
     {
-        Vector3 pos = new Vector3(Random.Range(-200, 200), 100, Random.Range(-200, 200));
-        pos.y = Terrain.activeTerrain.SampleHeight(pos) + 2f;
+        ResourceSpawner spawner = FindObjectOfType<ResourceSpawner>();
+        WorldConfig config = WorldManager.Instance != null ? WorldManager.Instance.config : null;
 
-        int type = Random.Range(0, 3);
-        // Используем сохраненную ссылку spawner вместо постоянного поиска
-        GameObject prefab = type == 0 ? spawner.energyCrystalPrefab :
-                          type == 1 ? spawner.foodPrefab :
-                          spawner.blockPrefab;
-
-        Instantiate(prefab, pos, Quaternion.identity);
+        for (int i = 0; i < count; i++)
+        {
+            GameObject prefab = ResolveResourcePrefab(spawner, config, Random.Range(0, 3));
+            if (prefab == null) continue;
+            Instantiate(prefab, RandomResourcePosition(config), Quaternion.identity);
+        }
     }
-}
 
     private void Start()
     {
@@ -38,9 +30,35 @@ public class ResourceSpawner : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(Random.Range(300, 600));
-            Vector3 pos = new Vector3(Random.Range(-200, 200), 100, Random.Range(-200, 200));
-            pos.y = Terrain.activeTerrain.SampleHeight(pos) + 1f;
-            Instantiate(foodPrefab, pos, Quaternion.identity);
+            WorldConfig config = WorldManager.Instance != null ? WorldManager.Instance.config : null;
+            GameObject prefab = foodPrefab != null ? foodPrefab : (config != null ? config.FoodPrefab : null);
+            if (prefab != null)
+                Instantiate(prefab, RandomResourcePosition(config), Quaternion.identity);
         }
+    }
+
+    private static GameObject ResolveResourcePrefab(ResourceSpawner spawner, WorldConfig config, int type)
+    {
+        if (type == 0)
+            return FirstPrefab(spawner != null ? spawner.energyCrystalPrefab : null, config != null ? config.EnergyCrystalPrefab : null, "Prefabs/EnergyCrystal");
+        if (type == 1)
+            return FirstPrefab(spawner != null ? spawner.foodPrefab : null, config != null ? config.FoodPrefab : null, "Prefabs/Food");
+        return FirstPrefab(spawner != null ? spawner.blockPrefab : null, config != null ? config.BlockPrefab : null, "Prefabs/Block");
+    }
+
+    private static GameObject FirstPrefab(GameObject scenePrefab, GameObject configPrefab, string resourcesPath)
+    {
+        if (scenePrefab != null) return scenePrefab;
+        if (configPrefab != null) return configPrefab;
+        return Resources.Load<GameObject>(resourcesPath);
+    }
+
+    private static Vector3 RandomResourcePosition(WorldConfig config)
+    {
+        Vector3 worldSize = config != null ? config.WorldSize : new Vector3(500, 300, 500);
+        Vector3 half = worldSize * 0.5f;
+        Vector3 pos = new Vector3(Random.Range(-half.x, half.x), worldSize.y, Random.Range(-half.z, half.z));
+        pos.y = Terrain.activeTerrain != null ? Terrain.activeTerrain.SampleHeight(pos) + 2f : 2f;
+        return pos;
     }
 }

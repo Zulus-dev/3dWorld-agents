@@ -5,11 +5,33 @@ public class WorldConfig : ScriptableObject
 {
     [Header("World Settings")]
     public Vector3 WorldSize = new Vector3(500, 300, 500);
-    public int InitialAgents = 80;
+    public int InitialAgents = 20;
+    public int TargetPopulation = 80;
+    public int MinimumPopulation = 20;
     public int InitialResources = 150;
-    public float EvolutionInterval = 1200f; // тики
+    public float EvolutionInterval = 1200f;
+    public float SnapshotInterval = 1f;
+    public int RandomSeed = 0;
+
+    [Header("Prefabs")]
+    public GameObject AgentPrefab;
+    public GameObject EnergyCrystalPrefab;
+    public GameObject FoodPrefab;
+    public GameObject BlockPrefab;
+    public GameObject CorpseResourcePrefab;
+
+    [Header("Terrain")]
+    public int TerrainResolution = 513;
+    public float TerrainMaxHeight = 150f;
+    public float BaseNoiseFrequency = 0.01f;
+    public int NoiseOctaves = 4;
+    public float SpawnHeightOffset = 3f;
+
+    [Header("Genetic Algorithm")]
     public float MutationRate = 0.12f;
     public float MutationStrength = 0.25f;
+    public int TournamentSize = 5;
+    public float EliteRatio = 0.1f;
 
     [Header("Fitness Weights")]
     public float LifetimeWeight = 0.4f;
@@ -21,5 +43,14 @@ public class WorldConfig : ScriptableObject
     [Header("Agent Settings")]
     public float BaseMetabolism = 0.15f;
     public float EnergyDeathThreshold = 0f;
-    public float ReproductionEnergyThreshold = 80f;
+    public float ReproductionEnergyThreshold = 120f;
+    public float ReproductionCost = 55f;
+    public float MaxAgentAge = 1800f;
+    public float ResourcePickupDistance = 2f;
+
+    [Header("Building")]
+    public float BuildEnergyCost = 15f;
+    public float BuildCooldown = 3f;
+    public float BuildDistance = 2.5f;
+    public float StabilityCheckRadius = 0.75f;
 }
