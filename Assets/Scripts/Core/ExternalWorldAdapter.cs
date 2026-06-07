@@ -4,23 +4,40 @@ public class ExternalWorldAdapter : MonoBehaviour
 {
     public static ExternalWorldAdapter Instance;
 
-    private void Awake() => Instance = this;
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
 
     public void RegisterAllObjects()
     {
-        // Вызывается после спавна
-        Debug.Log("All objects registered to API");
-        // Здесь будет ExternalWorldAPI.RegisterObject(...)
+        if (WorldManager.Instance == null) return;
+
+        foreach (WorldObject worldObject in WorldManager.Instance.GetWorldObjects())
+            RegisterObject(worldObject);
+    }
+
+    public void RegisterObject(WorldObject worldObject)
+    {
+        if (worldObject == null || worldObject.data == null) return;
+        ExternalWorldAPI.RegisterObject(worldObject.objectId, worldObject.data.type, worldObject.CreateSnapshot());
     }
 
     public void PushEvent(WorldEvent e)
     {
-        // ExternalWorldAPI.PushEvent(e);
-        Debug.Log($"Event: {e.eventType} at {e.position}");
+        ExternalWorldAPI.PushEvent(e);
+        Debug.Log("Event: " + e.eventType + " at " + e.position);
     }
 
     public void PushWorldSnapshot()
     {
-        // Compact snapshot каждые N тиков
+        if (WorldManager.Instance != null)
+            ExternalWorldAPI.PushWorldSnapshot(WorldManager.Instance.CreateCompactSnapshot());
     }
 }

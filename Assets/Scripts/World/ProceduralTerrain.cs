@@ -2,38 +2,57 @@
 
 public static class ProceduralTerrain
 {
-    public static void GenerateTerrain()
+    public static void GenerateTerrain(WorldConfig config = null)
     {
-        GameObject terrainGO = new GameObject("Terrain");
+        if (Terrain.activeTerrain != null) return;
+
+        GameObject terrainGO = new GameObject("Procedural Terrain");
         Terrain terrain = terrainGO.AddComponent<Terrain>();
+        TerrainCollider collider = terrainGO.AddComponent<TerrainCollider>();
         TerrainData terrainData = new TerrainData();
-        terrain.terrainData = terrainData;
 
-        terrainData.heightmapResolution = 513;
-        terrainData.size = new Vector3(500, 150, 500);
+        int resolution = config != null ? config.TerrainResolution : 513;
+        float maxHeight = config != null ? config.TerrainMaxHeight : 150f;
+        Vector3 worldSize = config != null ? config.WorldSize : new Vector3(500, 300, 500);
 
-        float[,] heights = GeneratePerlinHeights(terrainData);
+        terrainData.heightmapResolution = resolution;
+        terrainData.size = new Vector3(worldSize.x, maxHeight, worldSize.z);
+        terrainGO.transform.position = new Vector3(-worldSize.x * 0.5f, 0f, -worldSize.z * 0.5f);
+
+        float[,] heights = GeneratePerlinHeights(terrainData, config);
         terrainData.SetHeights(0, 0, heights);
+        terrain.terrainData = terrainData;
+        collider.terrainData = terrainData;
 
-        // Добавить текстуры, деревья и т.д. по желанию
         Debug.Log("Terrain generated");
     }
 
-    private static float[,] GeneratePerlinHeights(TerrainData td)
+    private static float[,] GeneratePerlinHeights(TerrainData td, WorldConfig config)
     {
         int width = td.heightmapResolution;
         int height = td.heightmapResolution;
         float[,] heights = new float[width, height];
+        float baseFrequency = config != null ? config.BaseNoiseFrequency : 0.01f;
+        int octaves = Mathf.Clamp(config != null ? config.NoiseOctaves : 4, 1, 8);
 
         for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < height; z++)
             {
-                float nx = x * 0.01f;
-                float nz = z * 0.01f;
-                heights[x, z] = Mathf.PerlinNoise(nx, nz) * 0.6f +
-                               Mathf.PerlinNoise(nx * 2, nz * 2) * 0.3f +
-                               Mathf.PerlinNoise(nx * 4, nz * 4) * 0.1f;
+                float amplitude = 0.6f;
+                float frequency = baseFrequency;
+                float value = 0f;
+                float totalAmplitude = 0f;
+
+                for (int octave = 0; octave < octaves; octave++)
+                {
+                    value += Mathf.PerlinNoise(x * frequency, z * frequency) * amplitude;
+                    totalAmplitude += amplitude;
+                    amplitude *= 0.5f;
+                    frequency *= 2f;
+                }
+
+                heights[x, z] = Mathf.Clamp01(value / totalAmplitude);
             }
         }
         return heights;
