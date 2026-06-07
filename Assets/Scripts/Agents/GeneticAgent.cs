@@ -6,6 +6,7 @@
 [RequireComponent(typeof(AgentBrain))]
 [RequireComponent(typeof(AgentEnergySystem))]
 [RequireComponent(typeof(AgentBuilder))]
+[RequireComponent(typeof(AgentDevelopmentSystem))]
 public class GeneticAgent : WorldObject
 {
     public GeneticController geneticController;
@@ -14,6 +15,7 @@ public class GeneticAgent : WorldObject
     public AgentBrain brain;
     public AgentEnergySystem energySystem;
     public AgentBuilder builder;
+    public AgentDevelopmentSystem developmentSystem;
 
     public Genotype PendingGenotype { get; set; }
     public bool PendingMutation { get; set; }
@@ -47,6 +49,8 @@ public class GeneticAgent : WorldObject
         geneticController.agent = this;
         geneticController.Initialize(PendingGenotype, PendingMutation);
         ApplyGenotype();
+        developmentSystem = GetComponent<AgentDevelopmentSystem>();
+        if (developmentSystem == null && Application.isPlaying) developmentSystem = gameObject.AddComponent<AgentDevelopmentSystem>();
         WorldEventLogger.LogEvent("Birth", objectId, string.Empty, transform.position);
     }
 
@@ -65,9 +69,15 @@ public class GeneticAgent : WorldObject
         TrackExploration();
     }
 
-    public void NotifyStructureBuilt()
+    public void NotifyStructureBuilt(AgentIntentType intentType)
     {
         StructuresBuiltCount++;
+        if (developmentSystem != null) developmentSystem.NotifyStructureBuilt(intentType);
+    }
+
+    public void NotifyResourceCollected(string resourceType)
+    {
+        if (developmentSystem != null) developmentSystem.NotifyResourceCollected(resourceType);
     }
 
     public void Die()
@@ -98,6 +108,8 @@ public class GeneticAgent : WorldObject
         brain = GetComponent<AgentBrain>();
         energySystem = GetComponent<AgentEnergySystem>();
         builder = GetComponent<AgentBuilder>();
+        developmentSystem = GetComponent<AgentDevelopmentSystem>();
+        if (developmentSystem == null && Application.isPlaying) developmentSystem = gameObject.AddComponent<AgentDevelopmentSystem>();
     }
 
     private void ApplyGenotype()
@@ -118,6 +130,7 @@ public class GeneticAgent : WorldObject
         {
             lastExplorationCell = cell;
             NewChunksExplored++;
+            if (developmentSystem != null) developmentSystem.NotifyNewExplorationCell();
         }
     }
 }

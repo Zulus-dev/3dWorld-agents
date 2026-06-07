@@ -22,12 +22,13 @@ public class WorldConfig : ScriptableObject
     public GameObject CorpseResourcePrefab;
 
     [Header("Terrain")]
-    public int TerrainResolution = 513;
+    public int TerrainResolution = 257;
     public float TerrainMaxHeight = 90f;
     public float BaseNoiseFrequency = 0.006f;
     public int NoiseOctaves = 4;
     public float TerrainHeightScale = 0.55f;
     public int TerrainSmoothIterations = 3;
+    public float TerrainPixelError = 8f;
     public float SpawnHeightOffset = 3f;
 
     [Header("Genetic Algorithm")]
@@ -42,6 +43,7 @@ public class WorldConfig : ScriptableObject
     public float StructuresWeight = 0.2f;
     public float ExplorationWeight = 0.1f;
     public float OffspringWeight = 0.05f;
+    public float DevelopmentWeight = 0.15f;
 
     [Header("Agent Settings")]
     public float BaseMetabolism = 0.15f;

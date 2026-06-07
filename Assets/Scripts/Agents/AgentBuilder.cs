@@ -43,14 +43,15 @@ public class AgentBuilder : MonoBehaviour
 
         energySystem.ConsumeEnergy(config.BuildEnergyCost);
         nextBuildTime = Time.time + config.BuildCooldown;
-        agent.NotifyStructureBuilt();
+        AgentIntentType intentType = agent.brain != null ? agent.brain.currentIntention.type : AgentIntentType.BuildUtility;
+        agent.NotifyStructureBuilt(intentType);
         WorldEventLogger.LogEvent("Build", agent.objectId, block.objectId, buildPos);
     }
 
     private bool FindStableBuildPosition(WorldConfig config, out Vector3 buildPos)
     {
         Vector3 origin = transform.position + Vector3.up;
-        Vector3 forward = transform.forward;
+        Vector3 forward = ResolveBuildDirection();
         RaycastHit hit;
 
         if (Physics.Raycast(origin, forward, out hit, config.BuildDistance))
@@ -73,5 +74,17 @@ public class AgentBuilder : MonoBehaviour
         }
 
         return supported;
+    }
+
+    private Vector3 ResolveBuildDirection()
+    {
+        if (agent != null && agent.brain != null && agent.brain.currentIntention.targetPosition != Vector3.zero)
+        {
+            Vector3 toTarget = agent.brain.currentIntention.targetPosition - transform.position;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude > 0.25f) return toTarget.normalized;
+        }
+
+        return transform.forward;
     }
 }

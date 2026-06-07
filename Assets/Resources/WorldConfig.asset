@@ -26,12 +26,13 @@ MonoBehaviour:
   FoodPrefab: {fileID: 0}
   BlockPrefab: {fileID: 0}
   CorpseResourcePrefab: {fileID: 0}
-  TerrainResolution: 513
+  TerrainResolution: 257
   TerrainMaxHeight: 90
   BaseNoiseFrequency: 0.006
   NoiseOctaves: 4
   TerrainHeightScale: 0.55
   TerrainSmoothIterations: 3
+  TerrainPixelError: 8
   SpawnHeightOffset: 3
   MutationRate: 0.12
   MutationStrength: 0.25
@@ -42,6 +43,7 @@ MonoBehaviour:
   StructuresWeight: 0.2
   ExplorationWeight: 0.1
   OffspringWeight: 0.05
+  DevelopmentWeight: 0.15
   BaseMetabolism: 0.15
   EnergyDeathThreshold: 0
   ReproductionEnergyThreshold: 120

@@ -23,6 +23,11 @@ public class Genotype
     public const int ExploreWeight = 16;
     public const int SeparationWeight = 17;
     public const int BuildWeight = 18;
+    public const int CuriosityDrive = 19;
+    public const int SocialAffinity = 20;
+    public const int HomeBias = 21;
+    public const int ToolUseDrive = 22;
+    public const int InnovationDrive = 23;
 
     public const int BaseSpeed = 30;
     public const int JumpForce = 31;

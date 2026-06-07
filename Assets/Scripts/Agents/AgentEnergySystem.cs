@@ -82,6 +82,7 @@ public class AgentEnergySystem : MonoBehaviour
         if (resource.data.type != "Food" && resource.data.type != "EnergyCrystal") return;
 
         AddEnergy(resource.data.energy);
+        if (agent != null) agent.NotifyResourceCollected(resource.data.type);
         WorldEventLogger.LogEvent("ResourceCollected", agent.objectId, resource.objectId, resource.transform.position);
         Destroy(resource.gameObject);
     }

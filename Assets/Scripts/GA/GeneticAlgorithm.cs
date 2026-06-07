@@ -50,7 +50,8 @@ public static class GeneticAlgorithm
                agent.energySystem.maxEnergyAchieved * cfg.EnergyWeight +
                agent.StructuresBuiltCount * cfg.StructuresWeight +
                agent.NewChunksExplored * cfg.ExplorationWeight +
-               agent.OffspringCount * cfg.OffspringWeight;
+               agent.OffspringCount * cfg.OffspringWeight +
+               (agent.developmentSystem != null ? agent.developmentSystem.DevelopmentScore * cfg.DevelopmentWeight : 0f);
     }
 
     private static GeneticAgent TournamentSelect(List<GeneticAgent> sortedAgents, int tournamentSize)

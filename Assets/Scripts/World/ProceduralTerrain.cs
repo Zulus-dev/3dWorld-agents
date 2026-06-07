@@ -8,6 +8,7 @@ public static class ProceduralTerrain
 
         GameObject terrainGO = new GameObject("Procedural Terrain");
         Terrain terrain = terrainGO.AddComponent<Terrain>();
+        terrain.heightmapPixelError = config != null ? Mathf.Max(1f, config.TerrainPixelError) : 8f;
         TerrainCollider collider = terrainGO.AddComponent<TerrainCollider>();
         TerrainData terrainData = new TerrainData();
 
