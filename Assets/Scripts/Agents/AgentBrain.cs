@@ -1,28 +1,84 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class AgentBrain : MonoBehaviour
 {
     public GeneticController geneticController;
     public AgentSensors sensors;
 
+    private readonly Queue<WorldEvent> shortTermMemory = new Queue<WorldEvent>();
+    private const int MemoryLimit = 10;
+
+    private void Awake()
+    {
+        CacheReferences();
+    }
+
+    private void Reset()
+    {
+        CacheReferences();
+    }
+
+    private void OnValidate()
+    {
+        CacheReferences();
+    }
+
+    private void CacheReferences()
+    {
+        if (geneticController == null) geneticController = GetComponent<GeneticController>();
+        if (sensors == null) sensors = GetComponent<AgentSensors>();
+    }
+
     public Vector3 ProcessInputs()
     {
         Vector3 desired = Vector3.zero;
+        Genotype genotype = geneticController != null ? geneticController.genotype : null;
 
-        foreach (var reading in sensors.readings)
+        foreach (AgentSensors.SensorReading reading in sensors.readings)
         {
-            float weight = GetWeightForType(reading.type);
-            desired += reading.direction * (1f / reading.distance) * weight;
+            float weight = GetWeightForType(reading.type, genotype);
+            desired += reading.direction * (1f / Mathf.Max(reading.distance, 0.1f)) * weight;
         }
 
-        // Добавляем небольшое случайное исследование
-        desired += Random.insideUnitSphere * 0.3f;
-        return desired.normalized;
+        float exploreWeight = genotype != null ? genotype.GetRange(Genotype.ExploreWeight, 0.02f, 0.35f) : 0.15f;
+        Vector2 wander = Random.insideUnitCircle * exploreWeight;
+        desired += new Vector3(wander.x, 0f, wander.y);
+        desired.y = 0f;
+        return desired.sqrMagnitude > 0.001f ? desired.normalized : transform.forward;
     }
 
-    private float GetWeightForType(string type)
+    public bool ShouldBuild()
     {
-        // Здесь можно расширять через гены
+        Genotype genotype = geneticController != null ? geneticController.genotype : null;
+        if (genotype == null) return false;
+
+        float buildWeight = genotype.Get(Genotype.BuildWeight);
+        return buildWeight > 0.72f && Random.value < buildWeight * 0.004f;
+    }
+
+    public void Remember(WorldEvent worldEvent)
+    {
+        shortTermMemory.Enqueue(worldEvent);
+        while (shortTermMemory.Count > MemoryLimit)
+            shortTermMemory.Dequeue();
+    }
+
+    private float GetWeightForType(string type, Genotype genotype)
+    {
+        if (genotype == null) return DefaultWeight(type);
+
+        if (type == "EnergyCrystal") return genotype.GetRange(Genotype.ResourceWeight, 0.2f, 3f);
+        if (type == "Food") return genotype.GetRange(Genotype.FoodWeight, 0.2f, 2.5f);
+        if (type == "Block") return genotype.GetRange(Genotype.BlockWeight, -0.5f, 1.5f);
+        if (type == "Structure") return genotype.GetRange(Genotype.StructureWeight, -0.5f, 1.5f);
+        if (type == "Agent") return genotype.GetRange(Genotype.AgentWeight, -2f, 2f);
+        if (type == "Hazard" || type == "Toxic" || type == "Wind") return -genotype.GetRange(Genotype.HazardWeight, 1f, 4f);
+        return 0.2f;
+    }
+
+    private float DefaultWeight(string type)
+    {
         if (type == "EnergyCrystal") return 1.5f;
         if (type == "Food") return 1.2f;
         if (type == "Hazard") return -2f;
